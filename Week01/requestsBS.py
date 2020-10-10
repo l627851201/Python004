@@ -3,6 +3,8 @@
 import os,sys,csv
 import requests
 from bs4 import BeautifulSoup as bs
+from fake_useragent import UserAgent
+ua = UserAgent(verify_ssl=False)
 
 class RequestsBS():
     """
@@ -24,12 +26,14 @@ class RequestsBS():
         """
         # 请求头
         header = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "User-Agent": f"{ua.random}"
             "Accept-Language": "zh-CN,zh;q=0.9",
             "Accept-Encoding": "gzip, deflate, br"
         }
         
         # 请求url
+        print(f"saveResponse, header: {header}")
         response = requests.get(self.url, headers=header)
         status_code = response.status_code
         if 200 == status_code:
@@ -86,7 +90,35 @@ class RequestsBS():
                 print("{}, {}, {}".format(getTitle, getType, getDate))
                 csv_writer.writerow(getData)
                 i = i + 1
+ 
+    def getMoviesTop10(self):
+        """
+            使用bs获取电影名称、电影类型和上映时间
+        """
+        # 读取文件内容
+        response_text = self.readResponse()
+
+        # 写入csv
+        with open(self.target_csv, 'w', encoding='utf8', newline='') as csvWriter:
+            # 文件标题
+            csv_writer = csv.writer(csvWriter)
+            hearer = ["电影名称", "电影类型", "上映时间"]
+            csv_writer.writerow(hearer)
+
+            # bs解析
+            bs_info= bs(response_text, 'html.parser')
+            # for i in range(self.movie_nums):
+            tags = bs_info.find_all('div', attrs={'class':'movie-hover-info'}, limits=10)
+            for tag in tags:
+                div_tags = tag.find_all("div", attrs={'class': "movie-hover-title"})
+                getTitle = div_tags[0]['title']
+                getType = (div_tags[1]).get_text().split()[-1]
+                getDate = (div_tags[3]).get_text().split()[-1]
+                getData = [getTitle, getType, getDate]
+                print("{}, {}, {}".format(getTitle, getType, getDate))
+                csv_writer.writerow(getData)
 
 if __name__ == '__main__':
     rbObj = RequestsBS(10)
+    rbObj.writeResponse()
     rbObj.getMovies()

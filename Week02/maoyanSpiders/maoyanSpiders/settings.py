@@ -62,7 +62,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 HTTP_PROXY_LIST = [
      'http://52.179.231.206:80',
-     'http://95.0.194.241:9090',
+     'http://95.0.194.241:9090'
 ]
 
 # Enable or disable extensions

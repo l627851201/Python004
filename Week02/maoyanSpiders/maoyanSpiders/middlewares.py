@@ -9,6 +9,7 @@ from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
 from collections import defaultdict
 from urllib.parse import urlparse
 import random
+import requests
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -62,21 +63,50 @@ class MaoyanspidersSpiderMiddleware:
 
 class RandomHttpProxyMiddleware(HttpProxyMiddleware):
 
-    def __init__(self, auth_encoding='utf-8', proxy_list = None):
+    def __init__(self, auth_encoding='utf-8'):
         self.proxies = defaultdict(list)
+
+        # 代理列表
+        proxy_list = self.get_proxy_ip_list()
         for proxy in proxy_list:
             parse = urlparse(proxy)
             self.proxies[parse.scheme].append(proxy)
 
+    def get_proxy_ip_list(self):
+        proxy_address = 'https://ip.jiangxianli.com/api/proxy_ips'
+
+        # 请求
+        response = requests.get(proxy_address)
+
+        ipList = response.json()['data']
+        # print("response, {}".format(ipList))
+
+        dataBody = ipList['data']
+        # print("ip list, \n")
+        # print(dataBody)
+        
+        # 获取IP和端口号
+        targetIPList = []
+        for ips in dataBody:
+            protocol = ips['protocol']
+            ip = ips['ip']
+            port = ips['port']
+            targetIPList.append(protocol + "://" + ip + ":" + port)
+
+        print(targetIPList)
+        return targetIPList
+
     @classmethod
     def from_crawler(cls, crawler):
-        if not crawler.settings.get('HTTP_PROXY_LIST'):
-            raise NotConfigured
+        # if not crawler.settings.get('HTTP_PROXY_LIST'):
+            # raise NotConfigured
 
-        http_proxy_list = crawler.settings.get('HTTP_PROXY_LIST')  
+        # http_proxy_list = crawler.settings.get('HTTP_PROXY_LIST')
+        http_proxy_list = cls.get_proxy_ip_list(cls)
         auth_encoding = crawler.settings.get('HTTPPROXY_AUTH_ENCODING', 'utf-8')
 
-        return cls(auth_encoding, http_proxy_list)
+        # return cls(auth_encoding, http_proxy_list)
+        return cls(auth_encoding)
 
     def _set_proxy(self, request, scheme):
         proxy = random.choice(self.proxies[scheme])

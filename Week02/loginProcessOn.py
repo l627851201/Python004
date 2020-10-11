@@ -1,4 +1,4 @@
-import unittest,allure,time,requests,os,sys
+import unittest,time,requests,os,sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from PIL import Image

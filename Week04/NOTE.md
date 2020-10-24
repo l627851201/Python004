@@ -3,7 +3,7 @@
 #姓名: 刘宝华
 #班级: 4级1班
 #小组: 2组
-#作业&总结链接: https://github.com/l627851201/Python004/tree/master/Week02
+#作业&总结链接: https://github.com/l627851201/Python004/tree/master/Week04
 
 学习感受：
 经过4周的学习，感觉课程内容比较紧凑；
